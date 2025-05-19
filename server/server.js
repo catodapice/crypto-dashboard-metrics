@@ -568,7 +568,7 @@ app.get("/api/bitmex/wallet-history-pnl", async (req, res) => {
 
     console.log(`Found ${pnlTransactions.length} RealisedPNL transactions`);
 
-    // Devolver las transacciones sin modificar
+    // No convertir los valores, mantenerlos como están
     res.json(pnlTransactions);
   } catch (error) {
     console.error(
