@@ -6,13 +6,13 @@ class BitmexService {
   private apiSecret: string = "";
   private baseUrl: string = "https://www.bitmex.com/api/v1";
 
-  // Método para configurar las credenciales
+  // Method to configure credentials
   setCredentials(apiKey: string, apiSecret: string) {
     this.apiKey = apiKey;
     this.apiSecret = apiSecret;
   }
 
-  // Método para generar la firma HMAC para autenticación
+  // Method to generate HMAC signature for authentication
   private generateSignature(
     verb: string,
     path: string,
@@ -25,7 +25,7 @@ class BitmexService {
     );
   }
 
-  // Método genérico para hacer solicitudes a la API
+  // Generic method to make API requests
   async makeRequest(
     verb: string,
     path: string,
@@ -65,121 +65,13 @@ class BitmexService {
 
       const response = await axios(config);
       return response.data;
-    } catch (error) {
-      console.error("Error making request to BitMEX API:", error);
+    } catch (error: any) {
+      console.error("API request error:", error.response?.data || error);
       throw error;
     }
   }
 
-  // Métodos para obtener datos específicos
-  async getWalletHistory(count = 100) {
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/bitmex/wallet-history?count=${count}`
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching wallet history:", error);
-      throw error;
-    }
-  }
-
-  async getRecentTrades(symbol: string = "XBTUSD", count: number = 100) {
-    return this.makeRequest(
-      "GET",
-      `/trade?symbol=${symbol}&count=${count}&reverse=true`
-    );
-  }
-
-  async getPositions() {
-    try {
-      const response = await axios.get(
-        "http://localhost:5000/api/bitmex/positions"
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching positions:", error);
-      throw error;
-    }
-  }
-
-  async getInstruments() {
-    return this.makeRequest("GET", "/instrument/active");
-  }
-
-  // Método para obtener datos públicos (no requiere autenticación)
-  async getPublicData() {
-    try {
-      const response = await axios.get(
-        "http://localhost:5000/api/bitmex/public/instruments"
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching public BitMEX data:", error);
-      throw error;
-    }
-  }
-
-  // Obtener operaciones del usuario con paginación
-  async getUserTrades(count = 500, start = 0) {
-    try {
-      const response = await axios.get(
-        `/api/bitmex/trades?count=${count}&start=${start}`
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching user trades:", error);
-      throw error;
-    }
-  }
-
-  // Método para obtener todas las operaciones (con múltiples solicitudes si es necesario)
-  async getAllUserTrades(maxResults = 1000) {
-    try {
-      let allTrades = [];
-      let start = 0;
-      const count = 100; // BitMEX permite máximo 100 por solicitud
-
-      while (allTrades.length < maxResults) {
-        const trades = await this.getUserTrades(count, start);
-
-        if (trades.length === 0) {
-          break; // No hay más operaciones
-        }
-
-        allTrades = [...allTrades, ...trades];
-        start += count;
-
-        if (trades.length < count) {
-          break; // Última página
-        }
-      }
-
-      return allTrades;
-    } catch (error) {
-      console.error("Error fetching all user trades:", error);
-      throw error;
-    }
-  }
-
-  // Buscar una transacción específica por ID
-  async getTransactionById(txId: string): Promise<any> {
-    if (!txId) {
-      throw new Error("Transaction ID is required");
-    }
-
-    try {
-      const response = await axios.get(
-        `http://localhost:5000/api/bitmex/transaction/${txId}`
-      );
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching transaction ${txId}:`, error);
-      throw error;
-    }
-  }
-
-  // Método para buscar una transacción en un CSV
+  // Method to search for a transaction in a CSV
   async searchTransactionInCSV(csvContent: string, txId: string) {
     try {
       const response = await axios.post(
@@ -198,7 +90,7 @@ class BitmexService {
     }
   }
 
-  // Método para obtener ejecuciones con paginación
+  // Method to get executions with pagination
   async getExecutions(count = 100, start = 0) {
     try {
       const response = await axios.get(
@@ -211,13 +103,13 @@ class BitmexService {
     }
   }
 
-  // Método para obtener todas las ejecuciones (con paginación)
+  // Method to get all executions (with pagination)
   async getAllExecutions(maxResults = 10000) {
     try {
       console.log("Fetching all executions...");
       let allExecutions = [];
       let start = 0;
-      const count = 500; // Número de ejecuciones por solicitud
+      const count = 500; // Number of executions per request
 
       while (allExecutions.length < maxResults) {
         console.log(`Fetching executions from ${start}...`);
@@ -226,7 +118,7 @@ class BitmexService {
 
           if (!executions || executions.length === 0) {
             console.log("No more executions found");
-            break; // No hay más ejecuciones
+            break; // No more executions
           }
 
           allExecutions = [...allExecutions, ...executions];
@@ -236,13 +128,13 @@ class BitmexService {
 
           if (executions.length < count) {
             console.log("Last page reached (received less than requested)");
-            break; // Última página
+            break; // Last page
           }
 
           start += count;
         } catch (error) {
           console.error("Error in pagination:", error);
-          // Continuar con lo que ya tenemos
+          // Continue with what we already have
           break;
         }
       }
@@ -251,7 +143,7 @@ class BitmexService {
       return allExecutions;
     } catch (error) {
       console.error("Error fetching all executions:", error);
-      return []; // Devolver array vacío en caso de error
+      return []; // Return empty array in case of error
     }
   }
 
@@ -282,7 +174,7 @@ class BitmexService {
     }
   }
 
-  // Método para buscar una transacción por ID
+  // Method to search for a transaction by ID
   async searchTransaction(txId: string) {
     try {
       const response = await axios.get(
@@ -297,13 +189,12 @@ class BitmexService {
     } catch (error: any) {
       console.error("Error searching transaction:", error);
       return {
-        error:
-          error.response?.data?.error || error.message || "Error desconocido",
+        error: error.response?.data?.error || error.message || "Unknown error",
       };
     }
   }
 
-  // Método para obtener el saldo de la wallet
+  // Method to get wallet balance
   async getWalletBalance() {
     try {
       const response = await axios.get(

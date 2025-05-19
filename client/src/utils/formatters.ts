@@ -14,10 +14,10 @@ export const formatCurrency = (value: number): string => {
 };
 
 /**
- * Formatea un valor de PnL con signo y separador de miles
- * @param amount Cantidad a formatear
- * @param decimals Número de decimales (por defecto 2)
- * @returns Cadena formateada con signo
+ * Formats a PnL value with sign and thousands separator
+ * @param amount Amount to format
+ * @param decimals Number of decimals (default 2)
+ * @returns Formatted string with sign
  */
 export const formatPnL = (amount: number, decimals: number = 2): string => {
   const isPositive = amount >= 0;
@@ -37,9 +37,9 @@ export const satoshisToUSDT = (satoshis: number): number => {
 };
 
 /**
- * Formatea una fecha ISO a formato legible
- * @param dateString Fecha en formato ISO
- * @returns Fecha formateada
+ * Formats an ISO date to readable format
+ * @param dateString Date in ISO format
+ * @returns Formatted date
  */
 export const formatDate = (dateString: string): string => {
   if (!dateString) return "N/A";
@@ -47,7 +47,7 @@ export const formatDate = (dateString: string): string => {
   try {
     const date = new Date(dateString);
     if (!isNaN(date.getTime())) {
-      return new Intl.DateTimeFormat("es-ES", {
+      return new Intl.DateTimeFormat("en-US", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -63,7 +63,7 @@ export const formatDate = (dateString: string): string => {
   }
 };
 
-// Función para formatear porcentajes
+// Function to format percentages
 export const formatPercentage = (value: number): string => {
   if (isNaN(value)) return "0.0%";
 
@@ -74,5 +74,5 @@ export const formatPercentage = (value: number): string => {
   }).format(value);
 };
 
-// Exportación vacía para asegurar que el archivo sea tratado como un módulo
+// Empty export to ensure the file is treated as a module
 export {};

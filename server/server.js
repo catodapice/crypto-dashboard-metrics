@@ -473,16 +473,16 @@ app.post(
       if (!csvData || !txId) {
         return res
           .status(400)
-          .json({ error: "Se requiere el CSV y el ID de transacción" });
+          .json({ error: "CSV and transaction ID are required" });
       }
 
-      // Parsear el CSV
+      // Parse the CSV
       const lines = csvData.split("\n");
       const headers = lines[0]
         .split(",")
         .map((h) => h.replace(/"/g, "").trim());
 
-      // Buscar la transacción
+      // Search for the transaction
       let transaction = null;
 
       for (let i = 1; i < lines.length; i++) {
@@ -506,7 +506,7 @@ app.post(
       if (transaction) {
         res.json(transaction);
       } else {
-        res.status(404).json({ error: "Transacción no encontrada en el CSV" });
+        res.status(404).json({ error: "Transaction not found in CSV" });
       }
     } catch (error) {
       console.error("Error searching CSV:", error);
