@@ -22,17 +22,17 @@ const RealisedPnLTable: React.FC<RealisedPnLTableProps> = ({
       <Table stickyHeader size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Fecha</TableCell>
-            <TableCell>Instrumento</TableCell>
-            <TableCell align="right">Monto</TableCell>
+            <TableCell>Date</TableCell>
+            <TableCell>Instrument</TableCell>
+            <TableCell align="right">Amount</TableCell>
             <TableCell align="right">Fee</TableCell>
-            <TableCell align="right">Neto</TableCell>
-            <TableCell>ID de Transacción</TableCell>
+            <TableCell align="right">Net</TableCell>
+            <TableCell>Transaction ID</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {transactions.map((tx, index) => {
-            // Convertir los valores de satoshis a USDT
+            // Convert values from satoshis to USDT
             const amount = satoshisToUSDT(tx.amount || 0);
             const fee = satoshisToUSDT(tx.fee || 0);
             const net = amount - fee;

@@ -255,7 +255,7 @@ class BitmexService {
     }
   }
 
-  // Método para obtener el historial de wallet con PnL realizado
+  // Method to get wallet history with realized PnL
   async getWalletHistoryWithPnL() {
     try {
       const response = await axios.get(
@@ -266,7 +266,7 @@ class BitmexService {
         throw new Error(response.data?.error || "Error fetching PnL data");
       }
 
-      // Calcular el PnL total (amount - fee)
+      // Calculate total PnL (amount - fee)
       const totalPnL = response.data.reduce(
         (sum: number, tx: any) => sum + (tx.amount || 0) - (tx.fee || 0),
         0

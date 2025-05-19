@@ -1,7 +1,7 @@
-// Cargar variables de entorno desde .env
+// Load environment variables from .env
 require("dotenv").config();
 
-// Procesar argumentos de línea de comandos
+// Process command line arguments
 const argv = require("yargs")
   .option("env", {
     alias: "e",
@@ -12,7 +12,7 @@ const argv = require("yargs")
   .help()
   .alias("help", "h").argv;
 
-// Determinar el entorno basado en el argumento
+// Determine environment based on argument
 const isTestnet = argv.env === "test";
 const apiKey = isTestnet
   ? process.env.BITMEX_TEST_API_KEY
@@ -21,7 +21,7 @@ const apiSecret = isTestnet
   ? process.env.BITMEX_TEST_API_SECRET
   : process.env.BITMEX_PROD_API_SECRET;
 
-// Agregar esta información al log inicial
+// Add this information to the initial log
 console.log("Environment variables loaded:");
 console.log("- BITMEX_TEST_NET:", isTestnet);
 console.log("- Using API keys for:", isTestnet ? "TESTNET" : "PRODUCTION");
@@ -520,28 +520,28 @@ app.get("/api/bitmex/wallet-history-pnl", async (req, res) => {
   try {
     const count = req.query.count || 10000;
     const currency = req.query.currency || "USDt";
-    const reverse = req.query.reverse !== "false"; // Por defecto true
+    const reverse = req.query.reverse !== "false"; // Default true
 
-    // Generar firma para autenticación
+    // Generate signature for authentication
     const path = `/api/v1/user/walletHistory`;
     const expires = Math.round(new Date().getTime() / 1000) + 60;
 
-    // Parámetros de consulta
+    // Query parameters
     const params = {
       count,
       currency,
       reverse,
     };
 
-    // Construir la cadena de consulta
+    // Build query string
     const queryString = Object.entries(params)
       .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
       .join("&");
 
-    // Mensaje para firmar
+    // Message to sign
     const message = `GET${path}?${queryString}${expires}`;
 
-    // Generar firma
+    // Generate signature
     const signature = crypto
       .createHmac("sha256", apiSecret)
       .update(message)
@@ -561,14 +561,14 @@ app.get("/api/bitmex/wallet-history-pnl", async (req, res) => {
       },
     });
 
-    // Filtrar solo las transacciones de PnL realizado
+    // Filter only RealisedPNL transactions
     const pnlTransactions = response.data.filter(
       (tx) => tx.transactType === "RealisedPNL"
     );
 
     console.log(`Found ${pnlTransactions.length} RealisedPNL transactions`);
 
-    // No convertir los valores, mantenerlos como están
+    // Don't convert the values, keep them as they are
     res.json(pnlTransactions);
   } catch (error) {
     console.error(
@@ -576,7 +576,7 @@ app.get("/api/bitmex/wallet-history-pnl", async (req, res) => {
       error.response?.data || error.message
     );
 
-    // Devolver el error para que el cliente lo maneje
+    // Return the error for the client to handle
     res.status(500).json({
       error: error.response?.data?.error?.message || error.message,
     });
@@ -734,12 +734,12 @@ app.get("/api/bitmex/wallet-alt", async (req, res) => {
   }
 });
 
-// Añadir un endpoint de health-check
+// Add a health-check endpoint
 app.get("/api/health-check", (req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date() });
 });
 
-// Iniciar el servidor
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });

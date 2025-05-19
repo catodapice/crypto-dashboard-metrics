@@ -26,28 +26,26 @@ const Dashboard = () => {
     setError(null);
 
     try {
-      // Obtener historial de PnL realizado
+      // Get realized PnL history
       const pnlData = await bitmexService.getWalletHistoryWithPnL();
       setPnlTransactions(pnlData.transactions || []);
       setTotalRealisedPnL(pnlData.totalPnL || 0);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-      setError(
-        "Error al cargar los datos del dashboard. Por favor, intenta de nuevo más tarde."
-      );
+      setError("Error loading dashboard data. Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
-  // Convertir totalPnL de satoshis a USDT
+  // Convert totalPnL from satoshis to USDT
   const formattedPnL = satoshisToUSDT(totalRealisedPnL);
 
   return (
     <Container maxWidth="lg">
       <Box sx={{ my: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Dashboard de Trading
+          Trading Dashboard
         </Typography>
 
         {loading ? (
@@ -63,7 +61,7 @@ const Dashboard = () => {
             {/* PnL Total Card */}
             <Paper sx={{ p: 3, mb: 4 }}>
               <Typography variant="h6" gutterBottom>
-                PnL Realizado Total
+                Total Realized PnL
               </Typography>
               <Typography
                 variant="h3"
@@ -72,20 +70,20 @@ const Dashboard = () => {
                 ${formatCurrency(formattedPnL)}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                {pnlTransactions.length} transacciones
+                {pnlTransactions.length} transactions
               </Typography>
             </Paper>
 
             {/* Transactions Table */}
             <Paper sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>
-                Historial de PnL Realizado
+                Realized PnL History
               </Typography>
               {pnlTransactions.length > 0 ? (
                 <RealisedPnLTable transactions={pnlTransactions} />
               ) : (
                 <Typography variant="body1" sx={{ py: 2 }}>
-                  No hay transacciones de PnL realizado para mostrar.
+                  No realized PnL transactions to display.
                 </Typography>
               )}
             </Paper>

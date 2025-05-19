@@ -1,12 +1,12 @@
 /**
- * Formatea un valor monetario con separador de miles y dos decimales
- * @param value Cantidad a formatear
- * @returns Cadena formateada
+ * Formats a monetary value with thousands separator and two decimals
+ * @param value Amount to format
+ * @returns Formatted string
  */
 export const formatCurrency = (value: number): string => {
   if (isNaN(value)) return "0.00";
 
-  // Formatear con 2 decimales y separadores de miles
+  // Format with 2 decimals and thousands separators
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
@@ -26,14 +26,13 @@ export const formatPnL = (amount: number, decimals: number = 2): string => {
 };
 
 /**
- * Convierte un valor de satoshis a USDT
- * @param satoshis Valor en satoshis
- * @returns Valor en USDT
+ * Converts a value from satoshis to USDT
+ * @param satoshis Value in satoshis
+ * @returns Value in USDT
  */
 export const satoshisToUSDT = (satoshis: number): number => {
-  // Dividir por 10000 para obtener el valor correcto
-  // Ejemplo: 1682039462 / 10000 = 168203.9462
-  // Pero como queremos 1,682.03, necesitamos dividir por 1000000
+  // Divide by 1000000 to get the correct value
+  // Example: 1682039462 / 1000000 = 1682.039462
   return satoshis / 1000000;
 };
 
