@@ -15,16 +15,33 @@ type RangeOption = "all" | "1y" | "6m";
 interface AccountBalanceChartProps {
   transactions: any[];
   range: RangeOption;
+  tradesOnly?: boolean;
 }
 
-const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ transactions, range }) => {
+const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({
+  transactions,
+  range,
+  tradesOnly = false,
+}) => {
   const data = useMemo(() => {
-    const mapped = transactions
-      .map(tx => ({
+    const sorted = [...transactions].sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+    let mapped: { date: Date; balance: number }[];
+
+    if (tradesOnly) {
+      let balance = 0;
+      mapped = sorted.map((tx) => {
+        balance += satoshisToUSDT((tx.amount || 0) - (tx.fee || 0));
+        return { date: new Date(tx.timestamp), balance };
+      });
+    } else {
+      mapped = sorted.map((tx) => ({
         date: new Date(tx.timestamp),
         balance: satoshisToUSDT(tx.walletBalance || 0),
-      }))
-      .sort((a, b) => a.date.getTime() - b.date.getTime());
+      }));
+    }
 
     if (mapped.length === 0) return [] as { date: string; balance: number }[];
 
@@ -44,7 +61,7 @@ const AccountBalanceChart: React.FC<AccountBalanceChartProps> = ({ transactions,
         date: d.date.toLocaleDateString(),
         balance: d.balance,
       }));
-  }, [transactions, range]);
+  }, [transactions, range, tradesOnly]);
 
   if (data.length === 0) {
     return (

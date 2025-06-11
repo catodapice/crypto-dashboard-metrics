@@ -9,6 +9,8 @@ import {
   TextField,
   ToggleButton,
   ToggleButtonGroup,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import { bitmexService } from "../services/bitmexService";
 import RealisedPnLTable from "../components/tables/RealisedPnLTable";
@@ -23,6 +25,7 @@ const Dashboard = () => {
   const [totalRealisedPnL, setTotalRealisedPnL] = useState(0);
   const [breakevenThreshold, setBreakevenThreshold] = useState(0);
   const [balanceRange, setBalanceRange] = useState<"all" | "1y" | "6m">("all");
+  const [tradesOnly, setTradesOnly] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -114,10 +117,22 @@ const Dashboard = () => {
                   <ToggleButton value="1y">1 Year</ToggleButton>
                   <ToggleButton value="6m">6 Months</ToggleButton>
                 </ToggleButtonGroup>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={tradesOnly}
+                      onChange={(e) => setTradesOnly(e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label="Trades Only"
+                  sx={{ ml: 2 }}
+                />
               </Box>
               <AccountBalanceChart
                 transactions={pnlTransactions}
                 range={balanceRange}
+                tradesOnly={tradesOnly}
               />
             </Paper>
 
