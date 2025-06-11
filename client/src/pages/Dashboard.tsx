@@ -7,6 +7,8 @@ import {
   Alert,
   Container,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
 } from "@mui/material";
 import { bitmexService } from "../services/bitmexService";
 import RealisedPnLTable from "../components/tables/RealisedPnLTable";
@@ -20,6 +22,7 @@ const Dashboard = () => {
   const [pnlTransactions, setPnlTransactions] = useState<any[]>([]);
   const [totalRealisedPnL, setTotalRealisedPnL] = useState(0);
   const [breakevenThreshold, setBreakevenThreshold] = useState(0);
+  const [balanceRange, setBalanceRange] = useState<"all" | "1y" | "6m">("all");
 
   useEffect(() => {
     fetchData();
@@ -85,6 +88,7 @@ const Dashboard = () => {
                 type="number"
                 value={breakevenThreshold}
                 onChange={(e) => setBreakevenThreshold(parseFloat(e.target.value))}
+                helperText="Trades within this range count as break-even"
               />
             </Box>
 
@@ -99,7 +103,22 @@ const Dashboard = () => {
               <Typography variant="h6" gutterBottom>
                 Account Balance Evolution
               </Typography>
-              <AccountBalanceChart transactions={pnlTransactions} />
+              <Box sx={{ mb: 2 }}>
+                <ToggleButtonGroup
+                  size="small"
+                  exclusive
+                  value={balanceRange}
+                  onChange={(_, val) => val && setBalanceRange(val)}
+                >
+                  <ToggleButton value="all">All Time</ToggleButton>
+                  <ToggleButton value="1y">1 Year</ToggleButton>
+                  <ToggleButton value="6m">6 Months</ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+              <AccountBalanceChart
+                transactions={pnlTransactions}
+                range={balanceRange}
+              />
             </Paper>
 
             {/* Transactions Table */}

@@ -68,3 +68,8 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+## Dashboard Features
+
+- **Breakeven Threshold**: set a value in USDT so that trades whose PnL falls between `-threshold` and `+threshold` are considered break-even when computing win rates.
+- **Account Balance Evolution**: visual chart of wallet balance with selectable date range (All Time, 1 Year, 6 Months).
