@@ -17,6 +17,7 @@ import RealisedPnLTable from "../components/tables/RealisedPnLTable";
 import { formatCurrency, satoshisToUSDT } from "../utils/formatters";
 import WalletPnLMetrics from "../components/analytics/WalletPnLMetrics";
 import AccountBalanceChart from "../components/charts/AccountBalanceChart";
+import AccountSelector from "../components/dashboard/AccountSelector";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -30,6 +31,10 @@ const Dashboard = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleAccountChange = () => {
+    fetchData();
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -68,6 +73,7 @@ const Dashboard = () => {
           </Alert>
         ) : (
           <>
+            <AccountSelector onChange={handleAccountChange} />
             {/* PnL Total Card */}
             <Paper sx={{ p: 3, mb: 4 }}>
               <Typography variant="h6" gutterBottom>

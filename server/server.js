@@ -14,12 +14,19 @@ const argv = require("yargs")
 
 // Determine environment based on argument
 const isTestnet = argv.env === "test";
-const apiKey = isTestnet
+let apiKey = isTestnet
   ? process.env.BITMEX_TEST_API_KEY
   : process.env.BITMEX_PROD_API_KEY;
-const apiSecret = isTestnet
+let apiSecret = isTestnet
   ? process.env.BITMEX_TEST_API_SECRET
   : process.env.BITMEX_PROD_API_SECRET;
+
+const resolveCredentials = (req) => {
+  return {
+    key: req.headers["x-api-key"] || apiKey,
+    secret: req.headers["x-api-secret"] || apiSecret,
+  };
+};
 
 // Add this information to the initial log
 console.log("Environment variables loaded:");
@@ -518,6 +525,7 @@ app.post(
 // Ruta para obtener el historial de wallet con PnL realizado
 app.get("/api/bitmex/wallet-history-pnl", async (req, res) => {
   try {
+    const { key, secret } = resolveCredentials(req);
     const count = req.query.count || 10000;
     const currency = req.query.currency || "USDt";
     const reverse = req.query.reverse !== "false"; // Default true
@@ -543,7 +551,7 @@ app.get("/api/bitmex/wallet-history-pnl", async (req, res) => {
 
     // Generate signature
     const signature = crypto
-      .createHmac("sha256", apiSecret)
+      .createHmac("sha256", secret)
       .update(message)
       .digest("hex");
 
@@ -555,7 +563,7 @@ app.get("/api/bitmex/wallet-history-pnl", async (req, res) => {
 
     const response = await axios.get(url, {
       headers: {
-        "api-key": apiKey,
+        "api-key": key,
         "api-signature": signature,
         "api-expires": expires,
       },
@@ -687,6 +695,7 @@ app.get("/api/bitmex/wallet-demo", (req, res) => {
 // Implementar una ruta alternativa que use un endpoint diferente
 app.get("/api/bitmex/wallet-alt", async (req, res) => {
   try {
+    const { key, secret } = resolveCredentials(req);
     // Intentar con un endpoint diferente que pueda funcionar con subcuentas
     const path = "/api/v1/user/margin";
     const expires = Math.round(new Date().getTime() / 1000) + 60;
@@ -696,7 +705,7 @@ app.get("/api/bitmex/wallet-alt", async (req, res) => {
 
     // Generar firma
     const signature = crypto
-      .createHmac("sha256", apiSecret)
+      .createHmac("sha256", secret)
       .update(message)
       .digest("hex");
 
@@ -709,7 +718,7 @@ app.get("/api/bitmex/wallet-alt", async (req, res) => {
     const response = await axios.get(url, {
       headers: {
         "api-expires": expires,
-        "api-key": apiKey,
+        "api-key": key,
         "api-signature": signature,
       },
     });

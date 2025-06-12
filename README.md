@@ -74,3 +74,5 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 - **Breakeven Threshold**: set a value in USDT so that trades whose PnL falls between `-threshold` and `+threshold` are considered break-even when computing win rates.
 - **Account Balance Evolution**: visual chart of wallet balance with selectable date range (All Time, 1 Year, 6 Months).
 - **Trades Only View**: toggle the balance chart to exclude deposits and withdrawals, showing growth purely from trading activity.
+- **API Key Manager**: manage multiple BitMEX API credentials directly from the dashboard and switch between accounts without editing server env variables.
+- **Grouped PnL History**: realized PnL transactions are grouped by `orderID` for a clearer overview.

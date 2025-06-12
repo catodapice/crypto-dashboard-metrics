@@ -151,7 +151,13 @@ class BitmexService {
   async getWalletHistoryWithPnL() {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/bitmex/wallet-history-pnl"
+        "http://localhost:5000/api/bitmex/wallet-history-pnl",
+        {
+          headers: {
+            "x-api-key": this.apiKey,
+            "x-api-secret": this.apiSecret,
+          },
+        }
       );
 
       if (!response.data || response.data.error) {
@@ -198,7 +204,13 @@ class BitmexService {
   async getWalletBalance() {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/bitmex/wallet-alt`
+        `http://localhost:5000/api/bitmex/wallet-alt`,
+        {
+          headers: {
+            "x-api-key": this.apiKey,
+            "x-api-secret": this.apiSecret,
+          },
+        }
       );
 
       if (!response.data || response.data.error) {
