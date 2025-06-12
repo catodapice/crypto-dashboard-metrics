@@ -21,6 +21,19 @@ const apiSecret = isTestnet
   ? process.env.BITMEX_TEST_API_SECRET
   : process.env.BITMEX_PROD_API_SECRET;
 
+function resolveCredentials(req) {
+  return {
+    key:
+      req.headers["x-api-key"] ||
+      req.headers["api-key"] ||
+      apiKey,
+    secret:
+      req.headers["x-api-secret"] ||
+      req.headers["api-secret"] ||
+      apiSecret,
+  };
+}
+
 // Add this information to the initial log
 console.log("Environment variables loaded:");
 console.log("- BITMEX_TEST_NET:", isTestnet);
@@ -145,6 +158,10 @@ app.get("/api/bitmex/test", async (req, res) => {
 // Ruta para obtener operaciones del usuario
 app.get("/api/bitmex/trades", async (req, res) => {
   try {
+    const { key: apiKey, secret: apiSecret } = resolveCredentials(req);
+    if (!apiKey || !apiSecret) {
+      return res.status(401).json({ error: "API credentials missing" });
+    }
     const count = parseInt(req.query.count) || 100;
     const start = parseInt(req.query.start) || 0;
 
@@ -201,16 +218,10 @@ app.get("/api/bitmex/trades", async (req, res) => {
 // Ruta para obtener posiciones actuales
 app.get("/api/bitmex/positions", async (req, res) => {
   try {
-    const apiKey = process.env.BITMEX_API_KEY;
-    const apiSecret = process.env.BITMEX_API_SECRET;
-
+    const { key: apiKey, secret: apiSecret } = resolveCredentials(req);
     if (!apiKey || !apiSecret) {
-      return res
-        .status(500)
-        .json({ error: "API credentials not configured on server" });
+      return res.status(401).json({ error: "API credentials not provided" });
     }
-
-    const isTestnet = process.env.BITMEX_TEST_NET === "true";
     const baseUrl = isTestnet
       ? "https://testnet.bitmex.com/api/v1"
       : "https://www.bitmex.com/api/v1";
