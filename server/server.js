@@ -60,8 +60,10 @@ app.use(bodyParser.json());
 app.post("/api/bitmex/proxy", async (req, res) => {
   try {
     const { method, endpoint, data } = req.body;
-    // Usar las variables globales en lugar de las del cliente
-    // const { apiKey, apiSecret } = req.body;
+    const { key: apiKey, secret: apiSecret } = resolveCredentials(req);
+    if (!apiKey || !apiSecret) {
+      return res.status(401).json({ error: "API credentials missing" });
+    }
 
     // Usar la variable global isTestnet
     const baseUrl = isTestnet
@@ -270,6 +272,10 @@ app.get("/api/env-check", (req, res) => {
 // Ruta para obtener una transacción específica por ID
 app.get("/api/bitmex/transaction/:txId", async (req, res) => {
   try {
+    const { key: apiKey, secret: apiSecret } = resolveCredentials(req);
+    if (!apiKey || !apiSecret) {
+      return res.status(401).json({ error: "API credentials missing" });
+    }
     const { txId } = req.params;
 
     if (!txId) {
@@ -333,6 +339,10 @@ app.get("/api/bitmex/transaction/:txId", async (req, res) => {
 // Ruta alternativa para buscar transacciones
 app.get("/api/bitmex/transaction-alt/:txId", async (req, res) => {
   try {
+    const { key: apiKey, secret: apiSecret } = resolveCredentials(req);
+    if (!apiKey || !apiSecret) {
+      return res.status(401).json({ error: "API credentials missing" });
+    }
     const txId = req.params.txId;
 
     // Generar firma para autenticación
@@ -431,6 +441,10 @@ app.get("/api/bitmex/transaction-alt/:txId", async (req, res) => {
 // Agregar un endpoint para verificar el entorno actual y los permisos
 app.get("/api/bitmex/check-environment", async (req, res) => {
   try {
+    const { key: apiKey, secret: apiSecret } = resolveCredentials(req);
+    if (!apiKey || !apiSecret) {
+      return res.status(401).json({ error: "API credentials missing" });
+    }
     // Verificar el entorno
     const environment = isTestnet ? "TESTNET" : "PRODUCTION";
 
@@ -529,6 +543,10 @@ app.post(
 // Ruta para obtener el historial de wallet con PnL realizado
 app.get("/api/bitmex/wallet-history-pnl", async (req, res) => {
   try {
+    const { key: apiKey, secret: apiSecret } = resolveCredentials(req);
+    if (!apiKey || !apiSecret) {
+      return res.status(401).json({ error: "API credentials missing" });
+    }
     const count = req.query.count || 10000;
     const currency = req.query.currency || "USDt";
     const reverse = req.query.reverse !== "false"; // Default true
@@ -597,6 +615,10 @@ app.get("/api/bitmex/wallet-history-pnl", async (req, res) => {
 // Ruta para obtener ejecuciones
 app.get("/api/bitmex/executions", async (req, res) => {
   try {
+    const { key: apiKey, secret: apiSecret } = resolveCredentials(req);
+    if (!apiKey || !apiSecret) {
+      return res.status(401).json({ error: "API credentials missing" });
+    }
     const count = parseInt(req.query.count) || 100;
     const start = parseInt(req.query.start) || 0;
     const filter = req.query.filter || "{}";
@@ -698,6 +720,10 @@ app.get("/api/bitmex/wallet-demo", (req, res) => {
 // Implementar una ruta alternativa que use un endpoint diferente
 app.get("/api/bitmex/wallet-alt", async (req, res) => {
   try {
+    const { key: apiKey, secret: apiSecret } = resolveCredentials(req);
+    if (!apiKey || !apiSecret) {
+      return res.status(401).json({ error: "API credentials missing" });
+    }
     // Intentar con un endpoint diferente que pueda funcionar con subcuentas
     const path = "/api/v1/user/margin";
     const expires = Math.round(new Date().getTime() / 1000) + 60;
