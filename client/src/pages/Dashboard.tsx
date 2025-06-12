@@ -6,20 +6,35 @@ import {
   CircularProgress,
   Alert,
   Container,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import { bitmexService } from "../services/bitmexService";
 import RealisedPnLTable from "../components/tables/RealisedPnLTable";
 import { formatCurrency, satoshisToUSDT } from "../utils/formatters";
+import WalletPnLMetrics from "../components/analytics/WalletPnLMetrics";
+import AccountBalanceChart from "../components/charts/AccountBalanceChart";
+import AccountSelector from "../components/dashboard/AccountSelector";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pnlTransactions, setPnlTransactions] = useState<any[]>([]);
   const [totalRealisedPnL, setTotalRealisedPnL] = useState(0);
+  const [breakevenThreshold, setBreakevenThreshold] = useState(0);
+  const [balanceRange, setBalanceRange] = useState<"all" | "1y" | "6m">("all");
+  const [tradesOnly, setTradesOnly] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleAccountChange = () => {
+    fetchData();
+  };
 
   const fetchData = async () => {
     setLoading(true);
@@ -58,6 +73,7 @@ const Dashboard = () => {
           </Alert>
         ) : (
           <>
+            <AccountSelector onChange={handleAccountChange} />
             {/* PnL Total Card */}
             <Paper sx={{ p: 3, mb: 4 }}>
               <Typography variant="h6" gutterBottom>
@@ -72,6 +88,58 @@ const Dashboard = () => {
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                 {pnlTransactions.length} transactions
               </Typography>
+            </Paper>
+
+            {/* Threshold input */}
+            <Box sx={{ mb: 3 }}>
+              <TextField
+                label="Breakeven Threshold (USDT)"
+                type="number"
+                value={breakevenThreshold}
+                onChange={(e) => setBreakevenThreshold(parseFloat(e.target.value))}
+                helperText="Trades within this range count as break-even"
+              />
+            </Box>
+
+            {/* Metrics */}
+            <WalletPnLMetrics
+              transactions={pnlTransactions}
+              threshold={breakevenThreshold}
+            />
+
+            {/* Balance chart */}
+            <Paper sx={{ p: 3, mb: 4 }}>
+              <Typography variant="h6" gutterBottom>
+                Account Balance Evolution
+              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <ToggleButtonGroup
+                  size="small"
+                  exclusive
+                  value={balanceRange}
+                  onChange={(_, val) => val && setBalanceRange(val)}
+                >
+                  <ToggleButton value="all">All Time</ToggleButton>
+                  <ToggleButton value="1y">1 Year</ToggleButton>
+                  <ToggleButton value="6m">6 Months</ToggleButton>
+                </ToggleButtonGroup>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={tradesOnly}
+                      onChange={(e) => setTradesOnly(e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label="Trades Only"
+                  sx={{ ml: 2 }}
+                />
+              </Box>
+              <AccountBalanceChart
+                transactions={pnlTransactions}
+                range={balanceRange}
+                tradesOnly={tradesOnly}
+              />
             </Paper>
 
             {/* Transactions Table */}

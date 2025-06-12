@@ -14,9 +14,25 @@ interface RealisedPnLTableProps {
   transactions: any[];
 }
 
-const RealisedPnLTable: React.FC<RealisedPnLTableProps> = ({
-  transactions,
-}) => {
+const groupByOrderId = (transactions: any[]) => {
+  const groups: Record<string, any> = {};
+  transactions.forEach((tx) => {
+    const key = tx.orderID || tx.orderId || tx.transactID;
+    if (!groups[key]) {
+      groups[key] = { ...tx, amount: 0, fee: 0, transactIDs: [] as string[] };
+    }
+    groups[key].amount += tx.amount || 0;
+    groups[key].fee += tx.fee || 0;
+    if (tx.transactID) groups[key].transactIDs.push(tx.transactID);
+    if (!groups[key].timestamp || new Date(tx.timestamp) < new Date(groups[key].timestamp)) {
+      groups[key].timestamp = tx.timestamp;
+    }
+  });
+  return Object.values(groups);
+};
+
+const RealisedPnLTable: React.FC<RealisedPnLTableProps> = ({ transactions }) => {
+  const rows = React.useMemo(() => groupByOrderId(transactions), [transactions]);
   return (
     <TableContainer component={Paper} sx={{ maxHeight: 600, overflow: "auto" }}>
       <Table stickyHeader size="small">
@@ -31,14 +47,14 @@ const RealisedPnLTable: React.FC<RealisedPnLTableProps> = ({
           </TableRow>
         </TableHead>
         <TableBody>
-          {transactions.map((tx, index) => {
+          {rows.map((tx, index) => {
             // Convert values from satoshis to USDT
             const amount = satoshisToUSDT(tx.amount || 0);
             const fee = satoshisToUSDT(tx.fee || 0);
             const net = amount - fee;
 
             return (
-              <TableRow key={tx.transactID || index}>
+              <TableRow key={tx.orderID || tx.transactID || index}>
                 <TableCell>{new Date(tx.timestamp).toLocaleString()}</TableCell>
                 <TableCell>{tx.address || "Unknown"}</TableCell>
                 <TableCell
@@ -62,7 +78,7 @@ const RealisedPnLTable: React.FC<RealisedPnLTableProps> = ({
                 >
                   ${formatCurrency(net)}
                 </TableCell>
-                <TableCell>{tx.transactID}</TableCell>
+                <TableCell>{tx.orderID || tx.transactIDs?.join(",")}</TableCell>
               </TableRow>
             );
           })}
