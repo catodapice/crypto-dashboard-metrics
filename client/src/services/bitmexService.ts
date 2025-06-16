@@ -170,15 +170,23 @@ class BitmexService {
         );
       }
 
+      console.log("Fetching wallet history with credentials:", {
+        apiKey: this.apiKey.substring(0, 5) + "...",
+        isTestnet: this.isTestnet,
+      });
+
       const response = await axios.get(
         `${this.apiBaseUrl}/bitmex/wallet-history-pnl`,
         {
           headers: {
             "x-api-key": this.apiKey,
             "x-api-secret": this.apiSecret,
+            "x-testnet": this.isTestnet.toString(),
           },
         }
       );
+
+      console.log("Wallet history response:", response.data);
 
       // Ensure we have valid data
       if (!response.data) {
@@ -205,8 +213,14 @@ class BitmexService {
         transactions,
         totalPnL,
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in getWalletHistoryWithPnL:", error);
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+        throw new Error(
+          error.response.data.error?.message || "Error fetching PnL data"
+        );
+      }
       throw error;
     }
   }

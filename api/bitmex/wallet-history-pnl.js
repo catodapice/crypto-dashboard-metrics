@@ -1,31 +1,41 @@
-const axios = require("axios");
-const crypto = require("crypto");
+import axios from "axios";
 
-module.exports = async (req, res) => {
-  // Enable CORS
+export default async function handler(req, res) {
+  // Set CORS headers
   res.setHeader("Access-Control-Allow-Credentials", true);
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,POST");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,DELETE,OPTIONS,PATCH,POST,PUT"
+  );
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-api-key, x-api-secret"
+    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-api-key, x-api-secret, x-testnet"
   );
 
-  // Handle OPTIONS request
+  // Handle preflight request
   if (req.method === "OPTIONS") {
     res.status(200).end();
     return;
   }
 
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: { message: "Method not allowed" } });
+  }
+
   try {
-    // Get credentials from request headers
     const apiKey = req.headers["x-api-key"];
     const apiSecret = req.headers["x-api-secret"];
     const isTestnet = req.headers["x-testnet"] === "true";
 
+    console.log("Received request with:", {
+      apiKey: apiKey ? `${apiKey.substring(0, 5)}...` : "none",
+      isTestnet,
+    });
+
     if (!apiKey || !apiSecret) {
       return res.status(400).json({
-        error: { message: "API key and secret are required" },
+        error: { message: "API credentials are required" },
       });
     }
 
@@ -33,33 +43,39 @@ module.exports = async (req, res) => {
       ? "https://testnet.bitmex.com/api/v1"
       : "https://www.bitmex.com/api/v1";
 
-    // Generate signature for authentication
-    const path = "/api/v1/wallet/history";
-    const expires = Math.round(new Date().getTime() / 1000) + 60;
-    const message = "GET" + path + expires;
-    const signature = crypto
-      .createHmac("sha256", apiSecret)
-      .update(message)
-      .digest("hex");
-
+    // Get wallet history
     const response = await axios.get(`${baseUrl}/wallet/history`, {
       headers: {
         "api-key": apiKey,
-        "api-signature": signature,
-        "api-expires": expires,
+        "api-secret": apiSecret,
       },
     });
 
-    // Ensure we're sending an array
-    const data = Array.isArray(response.data) ? response.data : [];
-    res.json(data);
+    console.log("BitMEX API response status:", response.status);
+
+    // Ensure we have valid data
+    if (!response.data || !Array.isArray(response.data)) {
+      throw new Error("Invalid response from BitMEX API");
+    }
+
+    // Return the transactions
+    return res.status(200).json(response.data);
   } catch (error) {
-    console.error(
-      "Error fetching wallet history:",
-      error.response?.data || error.message
-    );
-    res.status(error.response?.status || 500).json({
-      error: error.response?.data || { message: error.message },
+    console.error("Error in wallet-history-pnl:", error);
+
+    if (error.response) {
+      console.error("BitMEX API error:", error.response.data);
+      return res.status(error.response.status).json({
+        error: {
+          message:
+            error.response.data.error?.message ||
+            "Error fetching wallet history",
+        },
+      });
+    }
+
+    return res.status(500).json({
+      error: { message: "Internal server error" },
     });
   }
-};
+}
