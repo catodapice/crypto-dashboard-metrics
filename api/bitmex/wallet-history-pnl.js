@@ -50,7 +50,9 @@ module.exports = async (req, res) => {
       },
     });
 
-    res.json(response.data);
+    // Ensure we're sending an array
+    const data = Array.isArray(response.data) ? response.data : [];
+    res.json(data);
   } catch (error) {
     console.error(
       "Error fetching wallet history:",
