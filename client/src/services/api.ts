@@ -1,4 +1,5 @@
 import axios from "axios";
+import storage from "../utils/storage";
 import { bitmexService } from "./bitmexService";
 
 // Helper function to safely access localStorage
@@ -38,7 +39,7 @@ const api = axios.create({
 // Interceptor para añadir token de autenticación
 api.interceptors.request.use(
   (config) => {
-    const token = safeLocalStorage.getItem("token");
+    const token = storage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -55,7 +56,7 @@ api.interceptors.response.use(
   (error) => {
     // Manejar errores de autenticación (401)
     if (error.response && error.response.status === 401) {
-      safeLocalStorage.removeItem("token");
+      storage.removeItem("token");
       window.location.href = "/login";
     }
     return Promise.reject(error);
@@ -225,11 +226,11 @@ export const login = async (email: string, password: string) => {
   try {
     const response = await api.post("/auth/login", { email, password });
     if (response.data.token) {
-      safeLocalStorage.setItem("token", response.data.token);
+      storage.setItem("token", response.data.token);
     }
     return response.data;
   } catch (error) {
-    safeLocalStorage.removeItem("token");
+    storage.removeItem("token");
     throw error;
   }
 };
@@ -240,7 +241,7 @@ export const register = async (userData) => {
 };
 
 export const logout = () => {
-  safeLocalStorage.removeItem("token");
+  storage.removeItem("token");
 };
 
 export const getCurrentUser = async () => {

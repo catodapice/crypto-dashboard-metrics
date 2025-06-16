@@ -18,18 +18,7 @@ import { formatCurrency, satoshisToUSDT } from "../utils/formatters";
 import WalletPnLMetrics from "../components/analytics/WalletPnLMetrics";
 import AccountBalanceChart from "../components/charts/AccountBalanceChart";
 import AccountSelector from "../components/dashboard/AccountSelector";
-
-// Helper function to safely access localStorage
-const safeLocalStorage = {
-  getItem: (key: string): string | null => {
-    try {
-      return localStorage.getItem(key);
-    } catch (error) {
-      console.warn("localStorage is not available:", error);
-      return null;
-    }
-  },
-};
+import storage from "../utils/storage";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -43,7 +32,7 @@ const Dashboard = () => {
 
   // Check for existing accounts on component mount
   useEffect(() => {
-    const stored = safeLocalStorage.getItem("bitmexAccounts");
+    const stored = storage.getItem("bitmexAccounts");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);

@@ -4,6 +4,7 @@ import {
   login as apiLogin,
   logout as apiLogout,
 } from "../services/api";
+import storage from "../utils/storage";
 
 // Helper function to safely access localStorage
 const safeLocalStorage = {
@@ -33,16 +34,7 @@ interface AuthContextType {
   error: string | null;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  isAuthenticated: false,
-  user: null,
-  loading: true,
-  login: async () => {},
-  logout: () => {},
-  error: null,
-});
-
-export const useAuth = () => useContext(AuthContext);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -54,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = safeLocalStorage.getItem("token");
+      const token = storage.getItem("token");
 
       if (!token) {
         setLoading(false);
@@ -66,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(userData);
         setIsAuthenticated(true);
       } catch (err) {
-        safeLocalStorage.removeItem("token");
+        storage.removeItem("token");
       } finally {
         setLoading(false);
       }
@@ -107,4 +99,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
 };

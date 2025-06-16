@@ -11,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import { bitmexService } from "../../services/bitmexService";
+import storage from "../../utils/storage";
 
 interface Account {
   name: string;
@@ -24,25 +25,6 @@ interface AccountSelectorProps {
 
 const STORAGE_KEY = "bitmexAccounts";
 
-// Helper function to safely access localStorage
-const safeLocalStorage = {
-  getItem: (key: string): string | null => {
-    try {
-      return localStorage.getItem(key);
-    } catch (error) {
-      console.warn("localStorage is not available:", error);
-      return null;
-    }
-  },
-  setItem: (key: string, value: string): void => {
-    try {
-      localStorage.setItem(key, value);
-    } catch (error) {
-      console.warn("localStorage is not available:", error);
-    }
-  },
-};
-
 const AccountSelector: React.FC<AccountSelectorProps> = ({ onChange }) => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selected, setSelected] = useState<string>("");
@@ -51,7 +33,7 @@ const AccountSelector: React.FC<AccountSelectorProps> = ({ onChange }) => {
   const [apiSecret, setApiSecret] = useState("");
 
   useEffect(() => {
-    const stored = safeLocalStorage.getItem(STORAGE_KEY);
+    const stored = storage.getItem(STORAGE_KEY);
     if (stored) {
       try {
         const parsed: Account[] = JSON.parse(stored);
@@ -69,7 +51,7 @@ const AccountSelector: React.FC<AccountSelectorProps> = ({ onChange }) => {
 
   const saveAccounts = (list: Account[]) => {
     setAccounts(list);
-    safeLocalStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    storage.setItem(STORAGE_KEY, JSON.stringify(list));
   };
 
   const handleAdd = () => {
