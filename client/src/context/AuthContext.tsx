@@ -5,6 +5,25 @@ import {
   logout as apiLogout,
 } from "../services/api";
 
+// Helper function to safely access localStorage
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.warn("localStorage is not available:", error);
+      return null;
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn("localStorage is not available:", error);
+    }
+  },
+};
+
 interface AuthContextType {
   isAuthenticated: boolean;
   user: any;
@@ -35,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("token");
+      const token = safeLocalStorage.getItem("token");
 
       if (!token) {
         setLoading(false);
@@ -47,7 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(userData);
         setIsAuthenticated(true);
       } catch (err) {
-        localStorage.removeItem("token");
+        safeLocalStorage.removeItem("token");
       } finally {
         setLoading(false);
       }
@@ -59,12 +78,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     try {
       setError(null);
-      const data = await apiLogin({ email, password });
-      setUser(data.user);
+      await apiLogin(email, password);
       setIsAuthenticated(true);
-      return data;
     } catch (err: any) {
       setError(err.response?.data?.message || "Login failed");
+      setIsAuthenticated(false);
       throw err;
     }
   };

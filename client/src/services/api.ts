@@ -1,6 +1,32 @@
 import axios from "axios";
 import { bitmexService } from "./bitmexService";
 
+// Helper function to safely access localStorage
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.warn("localStorage is not available:", error);
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn("localStorage is not available:", error);
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      localStorage.removeItem(key);
+    } catch (error) {
+      console.warn("localStorage is not available:", error);
+    }
+  },
+};
+
 // Configuración base de axios
 const api = axios.create({
   baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000/api",
@@ -12,7 +38,7 @@ const api = axios.create({
 // Interceptor para añadir token de autenticación
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = safeLocalStorage.getItem("token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,7 +55,7 @@ api.interceptors.response.use(
   (error) => {
     // Manejar errores de autenticación (401)
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
+      safeLocalStorage.removeItem("token");
       window.location.href = "/login";
     }
     return Promise.reject(error);
@@ -195,10 +221,17 @@ export const fetchBitmexApiStatus = async () => {
 };
 
 // Auth
-export const login = async (credentials) => {
-  const response = await api.post("/auth/login", credentials);
-  localStorage.setItem("token", response.data.token);
-  return response.data;
+export const login = async (email: string, password: string) => {
+  try {
+    const response = await api.post("/auth/login", { email, password });
+    if (response.data.token) {
+      safeLocalStorage.setItem("token", response.data.token);
+    }
+    return response.data;
+  } catch (error) {
+    safeLocalStorage.removeItem("token");
+    throw error;
+  }
 };
 
 export const register = async (userData) => {
@@ -207,7 +240,7 @@ export const register = async (userData) => {
 };
 
 export const logout = () => {
-  localStorage.removeItem("token");
+  safeLocalStorage.removeItem("token");
 };
 
 export const getCurrentUser = async () => {
