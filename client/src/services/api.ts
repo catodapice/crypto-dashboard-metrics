@@ -41,6 +41,13 @@ api.interceptors.response.use(
 // Dashboard
 export const fetchDashboardData = async () => {
   try {
+    // Check if credentials are set before making API calls
+    if (!bitmexService.hasCredentials()) {
+      throw new Error(
+        "API credentials not set. Please select an account first."
+      );
+    }
+
     // Obtener datos de diferentes endpoints
     const [positions, trades, walletHistory] = await Promise.all([
       bitmexService.getPositions(),

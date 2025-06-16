@@ -12,6 +12,11 @@ class BitmexService {
     this.apiSecret = apiSecret;
   }
 
+  // Method to check if credentials are set
+  hasCredentials(): boolean {
+    return !!(this.apiKey && this.apiSecret);
+  }
+
   // Method to generate HMAC signature for authentication
   private generateSignature(
     verb: string,
@@ -150,6 +155,13 @@ class BitmexService {
   // Method to get wallet history with realized PnL
   async getWalletHistoryWithPnL() {
     try {
+      // Validate that credentials are set
+      if (!this.apiKey || !this.apiSecret) {
+        throw new Error(
+          "API credentials not set. Please select an account first."
+        );
+      }
+
       const response = await axios.get(
         "http://localhost:5000/api/bitmex/wallet-history-pnl",
         {
@@ -203,6 +215,13 @@ class BitmexService {
   // Method to get wallet balance
   async getWalletBalance() {
     try {
+      // Validate that credentials are set
+      if (!this.apiKey || !this.apiSecret) {
+        throw new Error(
+          "API credentials not set. Please select an account first."
+        );
+      }
+
       const response = await axios.get(
         `http://localhost:5000/api/bitmex/wallet-alt`,
         {
@@ -233,6 +252,13 @@ class BitmexService {
   // Fetch open positions
   async getPositions() {
     try {
+      // Validate that credentials are set
+      if (!this.apiKey || !this.apiSecret) {
+        throw new Error(
+          "API credentials not set. Please select an account first."
+        );
+      }
+
       const response = await axios.get(
         "http://localhost:5000/api/bitmex/positions",
         {
@@ -252,6 +278,13 @@ class BitmexService {
   // Fetch recent trades
   async getRecentTrades(count = 100, start = 0) {
     try {
+      // Validate that credentials are set
+      if (!this.apiKey || !this.apiSecret) {
+        throw new Error(
+          "API credentials not set. Please select an account first."
+        );
+      }
+
       const response = await axios.get(
         `http://localhost:5000/api/bitmex/trades?count=${count}&start=${start}`,
         {

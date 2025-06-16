@@ -39,10 +39,11 @@ const AccountSelector: React.FC<AccountSelectorProps> = ({ onChange }) => {
       if (parsed.length > 0) {
         setSelected(parsed[0].name);
         bitmexService.setCredentials(parsed[0].apiKey, parsed[0].apiSecret);
+        // Call onChange directly without setTimeout
         onChange?.(parsed[0]);
       }
     }
-  }, [onChange]);
+  }, []); // Empty dependency array since we only want this to run once on mount
 
   const saveAccounts = (list: Account[]) => {
     setAccounts(list);
