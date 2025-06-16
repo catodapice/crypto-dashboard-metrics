@@ -2,8 +2,8 @@ import axios from "axios";
 import CryptoJS from "crypto-js";
 
 class BitmexService {
-  private apiKey: string = "";
-  private apiSecret: string = "";
+  private apiKey: string | null = null;
+  private apiSecret: string | null = null;
   private isTestnet: boolean = false;
   private baseUrl: string = "https://www.bitmex.com/api/v1";
   private apiBaseUrl: string =
