@@ -180,18 +180,29 @@ class BitmexService {
         }
       );
 
-      if (!response.data || response.data.error) {
-        throw new Error(response.data?.error || "Error fetching PnL data");
+      // Ensure we have valid data
+      if (!response.data) {
+        throw new Error("No data received from the server");
       }
 
+      // If we received an error object, throw it
+      if (response.data.error) {
+        throw new Error(
+          response.data.error.message || "Error fetching PnL data"
+        );
+      }
+
+      // Ensure we have an array of transactions
+      const transactions = Array.isArray(response.data) ? response.data : [];
+
       // Calculate total PnL (amount - fee)
-      const totalPnL = response.data.reduce(
+      const totalPnL = transactions.reduce(
         (sum: number, tx: any) => sum + (tx.amount || 0) - (tx.fee || 0),
         0
       );
 
       return {
-        transactions: response.data,
+        transactions,
         totalPnL,
       };
     } catch (error) {
