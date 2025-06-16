@@ -12,6 +12,11 @@ class BitmexService {
     this.apiSecret = apiSecret;
   }
 
+  // Method to check if credentials are set
+  hasCredentials(): boolean {
+    return !!(this.apiKey && this.apiSecret);
+  }
+
   // Method to generate HMAC signature for authentication
   private generateSignature(
     verb: string,
@@ -150,8 +155,21 @@ class BitmexService {
   // Method to get wallet history with realized PnL
   async getWalletHistoryWithPnL() {
     try {
+      // Validate that credentials are set
+      if (!this.apiKey || !this.apiSecret) {
+        throw new Error(
+          "API credentials not set. Please select an account first."
+        );
+      }
+
       const response = await axios.get(
-        "http://localhost:5000/api/bitmex/wallet-history-pnl"
+        "http://localhost:5000/api/bitmex/wallet-history-pnl",
+        {
+          headers: {
+            "x-api-key": this.apiKey,
+            "x-api-secret": this.apiSecret,
+          },
+        }
       );
 
       if (!response.data || response.data.error) {
@@ -197,8 +215,21 @@ class BitmexService {
   // Method to get wallet balance
   async getWalletBalance() {
     try {
+      // Validate that credentials are set
+      if (!this.apiKey || !this.apiSecret) {
+        throw new Error(
+          "API credentials not set. Please select an account first."
+        );
+      }
+
       const response = await axios.get(
-        `http://localhost:5000/api/bitmex/wallet-alt`
+        `http://localhost:5000/api/bitmex/wallet-alt`,
+        {
+          headers: {
+            "x-api-key": this.apiKey,
+            "x-api-secret": this.apiSecret,
+          },
+        }
       );
 
       if (!response.data || response.data.error) {
@@ -216,6 +247,64 @@ class BitmexService {
       console.error("Error in getWalletBalance:", error);
       throw error;
     }
+  }
+
+  // Fetch open positions
+  async getPositions() {
+    try {
+      // Validate that credentials are set
+      if (!this.apiKey || !this.apiSecret) {
+        throw new Error(
+          "API credentials not set. Please select an account first."
+        );
+      }
+
+      const response = await axios.get(
+        "http://localhost:5000/api/bitmex/positions",
+        {
+          headers: {
+            "x-api-key": this.apiKey,
+            "x-api-secret": this.apiSecret,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching positions:", error);
+      throw error;
+    }
+  }
+
+  // Fetch recent trades
+  async getRecentTrades(count = 100, start = 0) {
+    try {
+      // Validate that credentials are set
+      if (!this.apiKey || !this.apiSecret) {
+        throw new Error(
+          "API credentials not set. Please select an account first."
+        );
+      }
+
+      const response = await axios.get(
+        `http://localhost:5000/api/bitmex/trades?count=${count}&start=${start}`,
+        {
+          headers: {
+            "x-api-key": this.apiKey,
+            "x-api-secret": this.apiSecret,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching trades:", error);
+      throw error;
+    }
+  }
+
+  // Alias for wallet history with PnL
+  async getWalletHistory() {
+    const data = await this.getWalletHistoryWithPnL();
+    return data.transactions;
   }
 }
 

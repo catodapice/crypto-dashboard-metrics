@@ -6,22 +6,65 @@ import {
   CircularProgress,
   Alert,
   Container,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  FormControlLabel,
+  Switch,
 } from "@mui/material";
 import { bitmexService } from "../services/bitmexService";
 import RealisedPnLTable from "../components/tables/RealisedPnLTable";
 import { formatCurrency, satoshisToUSDT } from "../utils/formatters";
+import WalletPnLMetrics from "../components/analytics/WalletPnLMetrics";
+import AccountBalanceChart from "../components/charts/AccountBalanceChart";
+import AccountSelector from "../components/dashboard/AccountSelector";
 
 const Dashboard = () => {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pnlTransactions, setPnlTransactions] = useState<any[]>([]);
   const [totalRealisedPnL, setTotalRealisedPnL] = useState(0);
+  const [breakevenThreshold, setBreakevenThreshold] = useState(0);
+  const [balanceRange, setBalanceRange] = useState<"all" | "1y" | "6m">("all");
+  const [tradesOnly, setTradesOnly] = useState(false);
+  const [hasAccount, setHasAccount] = useState(false);
 
+  // Check for existing accounts on component mount
   useEffect(() => {
-    fetchData();
-  }, []);
+    const stored = localStorage.getItem("bitmexAccounts");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed.length > 0) {
+        setHasAccount(true);
+        // If credentials are already set, fetch data
+        if (bitmexService.hasCredentials()) {
+          fetchData();
+        }
+      }
+    }
+  }, []); // Empty dependency array since we only want this to run once on mount
+
+  // Separate effect to handle account changes
+  const handleAccountChange = (account: any) => {
+    setHasAccount(true);
+    // Only fetch data if we have credentials
+    if (bitmexService.hasCredentials()) {
+      fetchData();
+    }
+  };
 
   const fetchData = async () => {
+    // Prevent multiple simultaneous requests
+    if (loading) {
+      console.log("Already loading data, skipping request");
+      return;
+    }
+
+    if (!bitmexService.hasCredentials()) {
+      setError("No API credentials set. Please select an account first.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -30,9 +73,12 @@ const Dashboard = () => {
       const pnlData = await bitmexService.getWalletHistoryWithPnL();
       setPnlTransactions(pnlData.transactions || []);
       setTotalRealisedPnL(pnlData.totalPnL || 0);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching dashboard data:", error);
-      setError("Error loading dashboard data. Please try again later.");
+      const errorMessage =
+        error.message ||
+        "Error loading dashboard data. Please try again later.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -48,6 +94,8 @@ const Dashboard = () => {
           Trading Dashboard
         </Typography>
 
+        <AccountSelector onChange={handleAccountChange} />
+
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
             <CircularProgress />
@@ -55,6 +103,11 @@ const Dashboard = () => {
         ) : error ? (
           <Alert severity="error" sx={{ my: 2 }}>
             {error}
+          </Alert>
+        ) : !hasAccount ? (
+          <Alert severity="info" sx={{ my: 2 }}>
+            Please add and select an API account above to view your trading
+            data.
           </Alert>
         ) : (
           <>
@@ -72,6 +125,60 @@ const Dashboard = () => {
               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                 {pnlTransactions.length} transactions
               </Typography>
+            </Paper>
+
+            {/* Threshold input */}
+            <Box sx={{ mb: 3 }}>
+              <TextField
+                label="Breakeven Threshold (USDT)"
+                type="number"
+                value={breakevenThreshold}
+                onChange={(e) =>
+                  setBreakevenThreshold(parseFloat(e.target.value))
+                }
+                helperText="Trades within this range count as break-even"
+              />
+            </Box>
+
+            {/* Metrics */}
+            <WalletPnLMetrics
+              transactions={pnlTransactions}
+              threshold={breakevenThreshold}
+            />
+
+            {/* Balance chart */}
+            <Paper sx={{ p: 3, mb: 4 }}>
+              <Typography variant="h6" gutterBottom>
+                Account Balance Evolution
+              </Typography>
+              <Box sx={{ mb: 2 }}>
+                <ToggleButtonGroup
+                  size="small"
+                  exclusive
+                  value={balanceRange}
+                  onChange={(_, val) => val && setBalanceRange(val)}
+                >
+                  <ToggleButton value="all">All Time</ToggleButton>
+                  <ToggleButton value="1y">1 Year</ToggleButton>
+                  <ToggleButton value="6m">6 Months</ToggleButton>
+                </ToggleButtonGroup>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={tradesOnly}
+                      onChange={(e) => setTradesOnly(e.target.checked)}
+                      size="small"
+                    />
+                  }
+                  label="Trades Only"
+                  sx={{ ml: 2 }}
+                />
+              </Box>
+              <AccountBalanceChart
+                transactions={pnlTransactions}
+                range={balanceRange}
+                tradesOnly={tradesOnly}
+              />
             </Paper>
 
             {/* Transactions Table */}
