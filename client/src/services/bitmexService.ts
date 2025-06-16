@@ -7,7 +7,7 @@ class BitmexService {
   private isTestnet: boolean = false;
   private baseUrl: string = "https://www.bitmex.com/api/v1";
   private apiBaseUrl: string =
-    "https://crypto-dashboard-metrics-81zv.vercel.app/api";
+    "https://crypto-dashboard-metrics-81zv.vercel.app";
 
   // Method to configure credentials
   setCredentials(
@@ -88,7 +88,7 @@ class BitmexService {
   async searchTransactionInCSV(csvContent: string, txId: string) {
     try {
       const response = await axios.post(
-        `${this.apiBaseUrl}/bitmex/csv-search?txId=${txId}`,
+        `${this.apiBaseUrl}/api/bitmex/csv-search?txId=${txId}`,
         csvContent,
         {
           headers: {
@@ -107,7 +107,7 @@ class BitmexService {
   async getExecutions(count = 100, start = 0) {
     try {
       const response = await axios.get(
-        `${this.apiBaseUrl}/bitmex/executions?count=${count}&start=${start}`
+        `${this.apiBaseUrl}/api/bitmex/executions?count=${count}&start=${start}`
       );
       return response.data;
     } catch (error) {
@@ -176,7 +176,7 @@ class BitmexService {
       });
 
       const response = await axios.get(
-        `${this.apiBaseUrl}/bitmex/wallet-history-pnl`,
+        `${this.apiBaseUrl}/api/bitmex/wallet-history-pnl`,
         {
           headers: {
             "x-api-key": this.apiKey,
@@ -229,7 +229,7 @@ class BitmexService {
   async searchTransaction(txId: string) {
     try {
       const response = await axios.get(
-        `${this.apiBaseUrl}/bitmex/transaction/${txId}`
+        `${this.apiBaseUrl}/api/bitmex/transaction/${txId}`
       );
       return response.data;
     } catch (error) {
