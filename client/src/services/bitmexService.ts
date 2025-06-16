@@ -7,7 +7,7 @@ class BitmexService {
   private isTestnet: boolean = false;
   private baseUrl: string = "https://www.bitmex.com/api/v1";
   private apiBaseUrl: string =
-    "https://crypto-dashboard-metrics-81zv.vercel.app";
+    "https://crypto-dashboard-metrics-81zv-pdb38ta9a-catodapices-projects.vercel.app";
 
   // Method to configure credentials
   setCredentials(
