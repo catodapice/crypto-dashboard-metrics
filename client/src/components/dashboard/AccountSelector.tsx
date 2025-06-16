@@ -24,6 +24,25 @@ interface AccountSelectorProps {
 
 const STORAGE_KEY = "bitmexAccounts";
 
+// Helper function to safely access localStorage
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.warn("localStorage is not available:", error);
+      return null;
+    }
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      console.warn("localStorage is not available:", error);
+    }
+  },
+};
+
 const AccountSelector: React.FC<AccountSelectorProps> = ({ onChange }) => {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [selected, setSelected] = useState<string>("");
@@ -32,22 +51,25 @@ const AccountSelector: React.FC<AccountSelectorProps> = ({ onChange }) => {
   const [apiSecret, setApiSecret] = useState("");
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY);
+    const stored = safeLocalStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const parsed: Account[] = JSON.parse(stored);
-      setAccounts(parsed);
-      if (parsed.length > 0) {
-        setSelected(parsed[0].name);
-        bitmexService.setCredentials(parsed[0].apiKey, parsed[0].apiSecret);
-        // Call onChange directly without setTimeout
-        onChange?.(parsed[0]);
+      try {
+        const parsed: Account[] = JSON.parse(stored);
+        setAccounts(parsed);
+        if (parsed.length > 0) {
+          setSelected(parsed[0].name);
+          bitmexService.setCredentials(parsed[0].apiKey, parsed[0].apiSecret);
+          onChange?.(parsed[0]);
+        }
+      } catch (error) {
+        console.error("Error parsing stored accounts:", error);
       }
     }
   }, []); // Empty dependency array since we only want this to run once on mount
 
   const saveAccounts = (list: Account[]) => {
     setAccounts(list);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    safeLocalStorage.setItem(STORAGE_KEY, JSON.stringify(list));
   };
 
   const handleAdd = () => {

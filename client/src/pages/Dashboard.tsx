@@ -19,6 +19,18 @@ import WalletPnLMetrics from "../components/analytics/WalletPnLMetrics";
 import AccountBalanceChart from "../components/charts/AccountBalanceChart";
 import AccountSelector from "../components/dashboard/AccountSelector";
 
+// Helper function to safely access localStorage
+const safeLocalStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      return localStorage.getItem(key);
+    } catch (error) {
+      console.warn("localStorage is not available:", error);
+      return null;
+    }
+  },
+};
+
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,15 +43,19 @@ const Dashboard = () => {
 
   // Check for existing accounts on component mount
   useEffect(() => {
-    const stored = localStorage.getItem("bitmexAccounts");
+    const stored = safeLocalStorage.getItem("bitmexAccounts");
     if (stored) {
-      const parsed = JSON.parse(stored);
-      if (parsed.length > 0) {
-        setHasAccount(true);
-        // If credentials are already set, fetch data
-        if (bitmexService.hasCredentials()) {
-          fetchData();
+      try {
+        const parsed = JSON.parse(stored);
+        if (parsed.length > 0) {
+          setHasAccount(true);
+          // If credentials are already set, fetch data
+          if (bitmexService.hasCredentials()) {
+            fetchData();
+          }
         }
+      } catch (error) {
+        console.error("Error parsing stored accounts:", error);
       }
     }
   }, []); // Empty dependency array since we only want this to run once on mount
