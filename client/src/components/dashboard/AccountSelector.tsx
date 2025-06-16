@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -10,69 +10,34 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { bitmexService } from "../../services/bitmexService";
-import storage from "../../utils/storage";
-
-interface Account {
-  name: string;
-  apiKey: string;
-  apiSecret: string;
-}
+import { useAccounts } from "../../context/AccountContext";
 
 interface AccountSelectorProps {
-  onChange?: (account: Account) => void;
+  onChange?: (account: any) => void;
 }
 
-const STORAGE_KEY = "bitmexAccounts";
-
 const AccountSelector: React.FC<AccountSelectorProps> = ({ onChange }) => {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [selected, setSelected] = useState<string>("");
+  const { accounts, selectedAccount, addAccount, selectAccount } =
+    useAccounts();
   const [name, setName] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [apiSecret, setApiSecret] = useState("");
 
-  useEffect(() => {
-    const stored = storage.getItem(STORAGE_KEY);
-    if (stored) {
-      try {
-        const parsed: Account[] = JSON.parse(stored);
-        setAccounts(parsed);
-        if (parsed.length > 0) {
-          setSelected(parsed[0].name);
-          bitmexService.setCredentials(parsed[0].apiKey, parsed[0].apiSecret);
-          onChange?.(parsed[0]);
-        }
-      } catch (error) {
-        console.error("Error parsing stored accounts:", error);
-      }
-    }
-  }, []); // Empty dependency array since we only want this to run once on mount
-
-  const saveAccounts = (list: Account[]) => {
-    setAccounts(list);
-    storage.setItem(STORAGE_KEY, JSON.stringify(list));
-  };
-
   const handleAdd = () => {
     if (!name || !apiKey || !apiSecret) return;
     const newAcc = { name, apiKey, apiSecret };
-    const updated = [...accounts, newAcc];
-    saveAccounts(updated);
+    addAccount(newAcc);
     setName("");
     setApiKey("");
     setApiSecret("");
-    setSelected(newAcc.name);
-    bitmexService.setCredentials(newAcc.apiKey, newAcc.apiSecret);
     onChange?.(newAcc);
   };
 
   const handleSelect = (evt: any) => {
     const val = evt.target.value as string;
-    setSelected(val);
     const acc = accounts.find((a) => a.name === val);
     if (acc) {
-      bitmexService.setCredentials(acc.apiKey, acc.apiSecret);
+      selectAccount(acc);
       onChange?.(acc);
     }
   };
@@ -87,7 +52,7 @@ const AccountSelector: React.FC<AccountSelectorProps> = ({ onChange }) => {
           <InputLabel id="account-select-label">Select Account</InputLabel>
           <Select
             labelId="account-select-label"
-            value={selected}
+            value={selectedAccount?.name || ""}
             label="Select Account"
             onChange={handleSelect}
           >

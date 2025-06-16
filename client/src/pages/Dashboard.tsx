@@ -18,7 +18,7 @@ import { formatCurrency, satoshisToUSDT } from "../utils/formatters";
 import WalletPnLMetrics from "../components/analytics/WalletPnLMetrics";
 import AccountBalanceChart from "../components/charts/AccountBalanceChart";
 import AccountSelector from "../components/dashboard/AccountSelector";
-import storage from "../utils/storage";
+import { useAccounts } from "../context/AccountContext";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(false);
@@ -28,35 +28,14 @@ const Dashboard = () => {
   const [breakevenThreshold, setBreakevenThreshold] = useState(0);
   const [balanceRange, setBalanceRange] = useState<"all" | "1y" | "6m">("all");
   const [tradesOnly, setTradesOnly] = useState(false);
-  const [hasAccount, setHasAccount] = useState(false);
+  const { selectedAccount } = useAccounts();
 
-  // Check for existing accounts on component mount
+  // Fetch data when an account is selected
   useEffect(() => {
-    const stored = storage.getItem("bitmexAccounts");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (parsed.length > 0) {
-          setHasAccount(true);
-          // If credentials are already set, fetch data
-          if (bitmexService.hasCredentials()) {
-            fetchData();
-          }
-        }
-      } catch (error) {
-        console.error("Error parsing stored accounts:", error);
-      }
-    }
-  }, []); // Empty dependency array since we only want this to run once on mount
-
-  // Separate effect to handle account changes
-  const handleAccountChange = (account: any) => {
-    setHasAccount(true);
-    // Only fetch data if we have credentials
-    if (bitmexService.hasCredentials()) {
+    if (selectedAccount) {
       fetchData();
     }
-  };
+  }, [selectedAccount]);
 
   const fetchData = async () => {
     // Prevent multiple simultaneous requests
@@ -99,7 +78,7 @@ const Dashboard = () => {
           Trading Dashboard
         </Typography>
 
-        <AccountSelector onChange={handleAccountChange} />
+        <AccountSelector />
 
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
@@ -109,7 +88,7 @@ const Dashboard = () => {
           <Alert severity="error" sx={{ my: 2 }}>
             {error}
           </Alert>
-        ) : !hasAccount ? (
+        ) : !selectedAccount ? (
           <Alert severity="info" sx={{ my: 2 }}>
             Please add and select an API account above to view your trading
             data.
