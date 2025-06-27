@@ -6,8 +6,7 @@ class BitmexService {
   private apiSecret: string | null = null;
   private isTestnet: boolean = false;
   private baseUrl: string = "https://www.bitmex.com/api/v1";
-  private apiBaseUrl: string =
-    "https://crypto-dashboard-metrics-81zv-pdb38ta9a-catodapices-projects.vercel.app";
+  private apiBaseUrl: string = process.env.REACT_APP_API_BASE_URL || "";
 
   // Method to configure credentials
   setCredentials(
@@ -249,7 +248,7 @@ class BitmexService {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/bitmex/wallet-alt`,
+        `${this.apiBaseUrl}/api/bitmex/wallet-alt`,
         {
           headers: {
             "x-api-key": this.apiKey,
@@ -286,7 +285,7 @@ class BitmexService {
       }
 
       const response = await axios.get(
-        "http://localhost:5000/api/bitmex/positions",
+        `${this.apiBaseUrl}/api/bitmex/positions`,
         {
           headers: {
             "x-api-key": this.apiKey,
@@ -312,7 +311,7 @@ class BitmexService {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/bitmex/trades?count=${count}&start=${start}`,
+        `${this.apiBaseUrl}/api/bitmex/trades?count=${count}&start=${start}`,
         {
           headers: {
             "x-api-key": this.apiKey,
