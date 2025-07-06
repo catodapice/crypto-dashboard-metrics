@@ -88,7 +88,7 @@ class BitmexService {
   async searchTransactionInCSV(csvContent: string, txId: string) {
     try {
       const response = await axios.post(
-        `${this.apiBaseUrl}/api/bitmex/csv-search?txId=${txId}`,
+        `https://crypto-dashboard-metrics.onrender.com/api/bitmex/csv-search?txId=${txId}`,
         csvContent,
         {
           headers: {
@@ -107,7 +107,7 @@ class BitmexService {
   async getExecutions(count = 100, start = 0) {
     try {
       const response = await axios.get(
-        `${this.apiBaseUrl}/api/bitmex/executions?count=${count}&start=${start}`
+        `https://crypto-dashboard-metrics.onrender.com/api/bitmex/executions?count=${count}&start=${start}`
       );
       return response.data;
     } catch (error) {
@@ -176,7 +176,7 @@ class BitmexService {
       });
 
       const response = await axios.get(
-        `${this.apiBaseUrl}/api/bitmex/wallet-history-pnl`,
+        "https://crypto-dashboard-metrics.onrender.com/api/bitmex/wallet-history-pnl",
         {
           headers: {
             "x-api-key": this.apiKey,
@@ -229,7 +229,7 @@ class BitmexService {
   async searchTransaction(txId: string) {
     try {
       const response = await axios.get(
-        `${this.apiBaseUrl}/api/bitmex/transaction/${txId}`
+        `https://crypto-dashboard-metrics.onrender.com/api/bitmex/transaction/${txId}`
       );
       return response.data;
     } catch (error) {

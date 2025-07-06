@@ -5,6 +5,7 @@
 # Dependencias
 /node_modules
 /vendor
+/client/node_modules
 /api/node_modules
 
 # Archivos compilados
