@@ -249,7 +249,7 @@ class BitmexService {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/bitmex/wallet-alt`,
+        `https://crypto-dashboard-metrics.onrender.com/api/bitmex/wallet-alt`,
         {
           headers: {
             "x-api-key": this.apiKey,
@@ -286,7 +286,7 @@ class BitmexService {
       }
 
       const response = await axios.get(
-        "http://localhost:5000/api/bitmex/positions",
+        "https://crypto-dashboard-metrics.onrender.com/api/bitmex/positions",
         {
           headers: {
             "x-api-key": this.apiKey,
@@ -312,7 +312,7 @@ class BitmexService {
       }
 
       const response = await axios.get(
-        `http://localhost:5000/api/bitmex/trades?count=${count}&start=${start}`,
+        `https://crypto-dashboard-metrics.onrender.com/api/bitmex/trades?count=${count}&start=${start}`,
         {
           headers: {
             "x-api-key": this.apiKey,
